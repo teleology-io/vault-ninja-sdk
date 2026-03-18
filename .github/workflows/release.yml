@@ -59,7 +59,7 @@ jobs:
 
           # README install URLs
           sed -i "s|/releases/download/v[^/]*/vault_ninja-[^\"]*|/releases/download/v$VERSION/vault_ninja-$VERSION.tar.gz|g" README.md
-          sed -i "s|/releases/download/v[^/]*/vaultninja-sdk-[^\"]*|/releases/download/v$VERSION/vaultninja-sdk-$VERSION.tgz|g" README.md
+          sed -i "s|/releases/download/v[^/]*/teleology-vn-[^\"]*|/releases/download/v$VERSION/teleology-vn-$VERSION.tgz|g" README.md
           sed -i "s|vault-ninja-sdk/go@v[^ ]*|vault-ninja-sdk/go@v$VERSION|g" README.md
 
       - name: Build Python sdist
@@ -97,4 +97,4 @@ jobs:
           name: v${{ inputs.version }}
           files: |
             python/dist/*.tar.gz
-            typescript/vaultninja-sdk-*.tgz
+            typescript/teleology-vn-*.tgz

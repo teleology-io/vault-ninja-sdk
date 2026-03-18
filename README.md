@@ -58,12 +58,12 @@ print(field.value)
 
 **Install:**
 ```bash
-npm install "https://github.com/teleology-io/vault-ninja-sdk/releases/download/v1.0.0/vaultninja-sdk-1.0.0.tgz"
+npm install "https://github.com/teleology-io/vault-ninja-sdk/releases/download/v1.0.0/teleology-vn-1.0.0.tgz"
 ```
 
 **Usage:**
 ```typescript
-import { VaultNinjaClient } from '@vaultninja/sdk';
+import { VaultNinjaClient } from '@teleology/vn';
 
 const client = new VaultNinjaClient('vn_org_...');
 
