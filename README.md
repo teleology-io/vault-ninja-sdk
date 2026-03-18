@@ -56,7 +56,7 @@ print(field.value)
 ```python
 client = VaultNinjaClient(
     api_key="vn_org_...",
-    base_url="https://vault.mycompany.com/api/sdk/v1"
+    base_url="https://api.vaultninja.org/api/sdk/v1"
 )
 ```
 
@@ -85,7 +85,7 @@ console.log(field.value);
 
 **Self-hosted:**
 ```typescript
-const client = new VaultNinjaClient('vn_org_...', 'https://vault.mycompany.com/api/sdk/v1');
+const client = new VaultNinjaClient('vn_org_...', 'https://api.vaultninja.org/api/sdk/v1');
 ```
 
 ---
@@ -112,7 +112,7 @@ fmt.Println(field.Value)
 
 **Self-hosted:**
 ```go
-client := vaultninja.New("vn_org_...", vaultninja.WithBaseURL("https://vault.mycompany.com/api/sdk/v1"))
+client := vaultninja.New("vn_org_...", vaultninja.WithBaseURL("https://api.vaultninja.org/api/sdk/v1"))
 ```
 
 ---
@@ -138,7 +138,7 @@ vn_get_file "$VN_API_KEY" "<secret-id>" "<file-id>" > cert.pem
 
 **Self-hosted:**
 ```bash
-export VAULT_API_URL="https://vault.mycompany.com/api/sdk/v1"
+export VAULT_API_URL="https://api.vaultninja.org/api/sdk/v1"
 source <(curl -fsSL ...)
 ```
 
