@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "vault-ninja"
+version = "1.0.0"
+description = "Vault Ninja SDK — read org secrets programmatically"
+requires-python = ">=3.9"
+dependencies = ["urllib3>=1.25.3", "python-dateutil"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["vault_ninja*"]

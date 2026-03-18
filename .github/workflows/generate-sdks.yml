@@ -1,0 +1,76 @@
+name: Generate SDKs
+
+on:
+  workflow_dispatch:
+    inputs:
+      spec_url:
+        description: 'OpenAPI spec URL'
+        required: false
+        default: 'https://beta.api.vaultninja.org/api/sdk/openapi.yaml'
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache openapi-generator JAR
+        uses: actions/cache@v4
+        with:
+          path: ~/.openapi-generator
+          key: openapi-generator-jar
+
+      - name: Install openapi-generator-cli
+        run: npm install -g @openapitools/openapi-generator-cli
+
+      - name: Fetch spec
+        run: curl -fsSL "${{ github.event.inputs.spec_url }}" -o openapi.yaml
+
+      - name: Generate Python SDK
+        run: |
+          openapi-generator-cli generate \
+            -i openapi.yaml \
+            -g python \
+            -o python \
+            --package-name vault_ninja \
+            --additional-properties=projectName=vault-ninja,packageVersion=1.0.0,library=urllib3
+
+      - name: Generate TypeScript SDK
+        run: |
+          openapi-generator-cli generate \
+            -i openapi.yaml \
+            -g typescript-fetch \
+            -o typescript/src \
+            --additional-properties=supportsES6=true,typescriptThreePlus=true,withSeparateModelsAndApi=true
+
+      - name: Generate Go SDK
+        run: |
+          openapi-generator-cli generate \
+            -i openapi.yaml \
+            -g go \
+            -o go \
+            --additional-properties=packageName=vaultninja,moduleName=github.com/teleology-io/vault-ninja-sdk/go,generateInterfaces=true,withGoCodegenComment=false
+
+      - name: Commit regenerated SDKs
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add openapi.yaml python/ typescript/src/ go/
+          if git diff --staged --quiet; then
+            echo "No SDK changes — spec is unchanged."
+            exit 0
+          fi
+          git commit -m "chore: regenerate SDKs from openapi spec"
+          git push

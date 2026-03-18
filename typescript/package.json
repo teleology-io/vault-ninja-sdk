@@ -1,0 +1,16 @@
+{
+  "name": "@vaultninja/sdk",
+  "version": "1.0.0",
+  "description": "Vault Ninja SDK — read org secrets programmatically",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "node-fetch": "^3.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
