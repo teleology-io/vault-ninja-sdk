@@ -1,5 +1,5 @@
 {
-  "name": "@vaultninja/sdk",
+  "name": "@teleology/vn",
   "version": "1.0.0",
   "description": "Vault Ninja SDK — read org secrets programmatically",
   "main": "dist/index.js",

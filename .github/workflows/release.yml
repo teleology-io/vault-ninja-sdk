@@ -62,6 +62,7 @@ jobs:
       - name: Build Python sdist
         run: |
           cd python
+          rm -f setup.py setup.cfg
           pip install build
           python -m build --sdist
 

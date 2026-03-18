@@ -1,3 +1,5 @@
 pyproject.toml
 README.md
 vault_ninja/client.py
+setup.py
+setup.cfg
