@@ -54,6 +54,9 @@ jobs:
             fs.writeFileSync('typescript/package.json', JSON.stringify(pkg, null, 2) + '\n');
           "
 
+          # Go UserAgent
+          sed -i "s|OpenAPI-Generator/[^/]*/go|OpenAPI-Generator/$VERSION/go|g" go/configuration.go
+
           # README install URLs
           sed -i "s|/releases/download/v[^/]*/vault_ninja-[^\"]*|/releases/download/v$VERSION/vault_ninja-$VERSION.tar.gz|g" README.md
           sed -i "s|/releases/download/v[^/]*/vaultninja-sdk-[^\"]*|/releases/download/v$VERSION/vaultninja-sdk-$VERSION.tgz|g" README.md
@@ -77,7 +80,7 @@ jobs:
         run: |
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
-          git add python/pyproject.toml typescript/package.json README.md
+          git add python/pyproject.toml typescript/package.json go/configuration.go README.md
           git commit -m "chore: release v${{ inputs.version }}"
           git push
 
