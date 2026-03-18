@@ -18,6 +18,7 @@ __version__ = "1.0.0"
 
 # Define package exports
 __all__ = [
+    "VaultNinjaClient",
     "SecretsApi",
     "ApiResponse",
     "ApiClient",
@@ -57,4 +58,7 @@ from vault_ninja.models.secret import Secret as Secret
 from vault_ninja.models.secret_field import SecretField as SecretField
 from vault_ninja.models.secret_file import SecretFile as SecretFile
 from vault_ninja.models.secret_summary import SecretSummary as SecretSummary
+
+# import handwritten client
+from vault_ninja.client import VaultNinjaClient as VaultNinjaClient
 
