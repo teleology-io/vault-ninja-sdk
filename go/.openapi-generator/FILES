@@ -19,5 +19,4 @@ model_secret_field.go
 model_secret_file.go
 model_secret_summary.go
 response.go
-test/api_secrets_test.go
 utils.go

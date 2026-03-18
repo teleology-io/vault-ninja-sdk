@@ -15,13 +15,6 @@ setup.cfg
 setup.py
 test-requirements.txt
 test/__init__.py
-test/test_error.py
-test/test_field_type.py
-test/test_secret.py
-test/test_secret_field.py
-test/test_secret_file.py
-test/test_secret_summary.py
-test/test_secrets_api.py
 tox.ini
 vault_ninja/__init__.py
 vault_ninja/api/__init__.py

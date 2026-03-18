@@ -18,12 +18,12 @@ info:
     Requests are subject to standard rate limiting. Include exponential backoff
     on `429` responses.
   title: Vault Ninja — Organization SDK API
-  version: 1.0.0
+  version: 1.0.1
 servers:
 - description: Local dev
   url: http://localhost:8080/api/sdk/v1
 - description: Production
-  url: https://vaultninja.org/api/sdk/v1
+  url: https://api.vaultninja.org/api/sdk/v1
 security:
 - apiKeyAuth: []
 tags:

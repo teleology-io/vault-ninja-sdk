@@ -1,7 +1,7 @@
 openapi: "3.1.0"
 info:
   title: Vault Ninja — Organization SDK API
-  version: "1.0.0"
+  version: "1.0.1"
   description: |
     Read-only API for programmatic access to an organization's secrets.
 
@@ -23,7 +23,7 @@ info:
 servers:
   - url: http://localhost:8080/api/sdk/v1
     description: Local dev
-  - url: https://vaultninja.org/api/sdk/v1
+  - url: https://api.vaultninja.org/api/sdk/v1
     description: Production
 
 tags:
