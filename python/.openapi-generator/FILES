@@ -14,7 +14,6 @@ requirements.txt
 test-requirements.txt
 test/__init__.py
 tox.ini
-vault_ninja/__init__.py
 vault_ninja/api/__init__.py
 vault_ninja/api/secrets_api.py
 vault_ninja/api_client.py
