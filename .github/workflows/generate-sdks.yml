@@ -7,6 +7,12 @@ on:
         description: 'OpenAPI spec URL'
         required: false
         default: 'https://beta.api.vaultninja.org/api/sdk/openapi.yaml'
+  workflow_call:
+    inputs:
+      spec_url:
+        type: string
+        required: false
+        default: 'https://beta.api.vaultninja.org/api/sdk/openapi.yaml'
 
 permissions:
   contents: write
@@ -36,7 +42,7 @@ jobs:
         run: npm install -g @openapitools/openapi-generator-cli
 
       - name: Fetch spec
-        run: curl -fsSL "${{ github.event.inputs.spec_url }}" -o openapi.yaml
+        run: curl -fsSL "${{ inputs.spec_url }}" -o openapi.yaml
 
       - name: Generate Python SDK
         run: |

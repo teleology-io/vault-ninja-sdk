@@ -1,0 +1,96 @@
+name: Release SDKs
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.2.0)'
+        required: true
+      spec_url:
+        description: 'OpenAPI spec URL'
+        required: false
+        default: 'https://beta.api.vaultninja.org/api/sdk/openapi.yaml'
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    uses: ./.github/workflows/generate-sdks.yml
+    with:
+      spec_url: ${{ inputs.spec_url }}
+    permissions:
+      contents: write
+
+  release:
+    needs: generate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Bump versions
+        run: |
+          VERSION="${{ inputs.version }}"
+
+          # Python
+          sed -i "s/^version = .*/version = \"$VERSION\"/" python/pyproject.toml
+
+          # TypeScript
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('typescript/package.json', 'utf8'));
+            pkg.version = '$VERSION';
+            fs.writeFileSync('typescript/package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+
+          # README install URLs
+          sed -i "s|/releases/download/v[^/]*/vault_ninja-[^\"]*|/releases/download/v$VERSION/vault_ninja-$VERSION.tar.gz|g" README.md
+          sed -i "s|/releases/download/v[^/]*/vaultninja-sdk-[^\"]*|/releases/download/v$VERSION/vaultninja-sdk-$VERSION.tgz|g" README.md
+          sed -i "s|vault-ninja-sdk/go@v[^ ]*|vault-ninja-sdk/go@v$VERSION|g" README.md
+
+      - name: Build Python sdist
+        run: |
+          cd python
+          pip install build
+          python -m build --sdist
+
+      - name: Build TypeScript package
+        run: |
+          cd typescript
+          npm install
+          npm run build
+          npm pack
+
+      - name: Commit version bumps
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add python/pyproject.toml typescript/package.json README.md
+          git commit -m "chore: release v${{ inputs.version }}"
+          git push
+
+      - name: Tag release
+        run: |
+          git tag "v${{ inputs.version }}"
+          git tag "go/v${{ inputs.version }}"
+          git push origin "v${{ inputs.version }}" "go/v${{ inputs.version }}"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ inputs.version }}
+          name: v${{ inputs.version }}
+          files: |
+            python/dist/*.tar.gz
+            typescript/vaultninja-sdk-*.tgz

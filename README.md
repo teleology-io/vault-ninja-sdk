@@ -22,7 +22,7 @@ Create keys in your org settings → **API Keys**.
 
 The default base URL is `https://vaultninja.org/api/sdk/v1`.
 
-Override it by setting the `VAULT_API_URL` environment variable or passing it directly to the client constructor — useful for self-hosted deployments or staging environments.
+Override it by setting the `VAULT_API_URL` environment variable or passing it directly to the client constructor.
 
 ---
 
@@ -30,7 +30,7 @@ Override it by setting the `VAULT_API_URL` environment variable or passing it di
 
 **Install:**
 ```bash
-pip install "git+https://github.com/teleology-io/vault-ninja-sdk.git#subdirectory=python"
+pip install "https://github.com/teleology-io/vault-ninja-sdk/releases/download/v1.0.0/vault_ninja-1.0.0.tar.gz"
 ```
 
 **Usage:**
@@ -52,40 +52,27 @@ field = client.secrets.get_field(id="<secret-id>", fid="<field-id>")
 print(field.value)
 ```
 
-**Self-hosted:**
-```python
-client = VaultNinjaClient(
-    api_key="vn_org_...",
-    base_url="https://api.vaultninja.org/api/sdk/v1"
-)
-```
-
 ---
 
 ## TypeScript / Node.js
 
 **Install:**
 ```bash
-# Copy src/ into your project, or install via tarball:
-npm install "https://github.com/teleology-io/vault-ninja-sdk/archive/refs/heads/master.tar.gz"
+npm install "https://github.com/teleology-io/vault-ninja-sdk/releases/download/v1.0.0/vaultninja-sdk-1.0.0.tgz"
 ```
 
 **Usage:**
 ```typescript
-import { VaultNinjaClient } from './src/client';
+import { VaultNinjaClient } from '@vaultninja/sdk';
 
 const client = new VaultNinjaClient('vn_org_...');
 
 const secrets = await client.listSecrets();
 const secret  = await client.getSecret('<secret-id>');
 const field   = await client.getField('<secret-id>', '<field-id>');
+const file    = await client.getFile('<secret-id>', '<file-id>');
 
 console.log(field.value);
-```
-
-**Self-hosted:**
-```typescript
-const client = new VaultNinjaClient('vn_org_...', 'https://api.vaultninja.org/api/sdk/v1');
 ```
 
 ---
@@ -94,7 +81,7 @@ const client = new VaultNinjaClient('vn_org_...', 'https://api.vaultninja.org/ap
 
 **Install:**
 ```bash
-go get github.com/teleology-io/vault-ninja-sdk/go@latest
+go get github.com/teleology-io/vault-ninja-sdk/go@v1.0.0
 ```
 
 **Usage:**
@@ -108,11 +95,6 @@ secret,  err := client.GetSecret(ctx, "<secret-id>")
 field,   err := client.GetField(ctx, "<secret-id>", "<field-id>")
 
 fmt.Println(field.Value)
-```
-
-**Self-hosted:**
-```go
-client := vaultninja.New("vn_org_...", vaultninja.WithBaseURL("https://api.vaultninja.org/api/sdk/v1"))
 ```
 
 ---
@@ -136,11 +118,6 @@ PASSWORD=$(vn_get_field "$VN_API_KEY" "<secret-id>" "<field-id>" | jq -r '.value
 vn_get_file "$VN_API_KEY" "<secret-id>" "<file-id>" > cert.pem
 ```
 
-**Self-hosted:**
-```bash
-export VAULT_API_URL="https://api.vaultninja.org/api/sdk/v1"
-source <(curl -fsSL ...)
-```
 
 **GitHub Actions example:**
 ```yaml
