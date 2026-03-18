@@ -1,0 +1,293 @@
+openapi: "3.1.0"
+info:
+  title: Vault Ninja — Organization SDK API
+  version: "1.0.0"
+  description: |
+    Read-only API for programmatic access to an organization's secrets.
+
+    ## Authentication
+    All requests must include an `Authorization` header with a Bearer API key:
+    ```
+    Authorization: Bearer vn_org_<key>
+    ```
+    API keys are created and managed in your org settings → API Keys.
+    Keys are scoped to a single organization and provide read-only access.
+
+    ## Key format
+    Keys start with `vn_org_` followed by 32 random hex characters.
+
+    ## Rate limiting
+    Requests are subject to standard rate limiting. Include exponential backoff
+    on `429` responses.
+
+servers:
+  - url: http://localhost:8080/api/sdk/v1
+    description: Local dev
+  - url: https://vaultninja.org/api/sdk/v1
+    description: Production
+
+tags:
+  - name: secrets
+    description: Read org secrets, fields, and files
+
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: "vn_org_<hex>"
+      description: "Organization API key obtained from org settings → API Keys"
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+      example:
+        error: "invalid or revoked API key"
+
+    FieldType:
+      type: string
+      enum: [password, card, totp, url, note, text]
+
+    SecretField:
+      type: object
+      description: A single field belonging to a secret. The `value` is returned decrypted.
+      required: [id, secret_id, position, field_type, label, value, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        secret_id:
+          type: string
+          format: uuid
+        position:
+          type: integer
+        field_type:
+          $ref: '#/components/schemas/FieldType'
+        label:
+          type: string
+        value:
+          type: string
+          description: Decrypted plaintext value
+        created_at:
+          type: string
+          format: date-time
+      example:
+        id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        secret_id: "1fa85f64-5717-4562-b3fc-2c963f66afa6"
+        position: 0
+        field_type: password
+        label: "Password"
+        value: "hunter2"
+        created_at: "2026-01-01T00:00:00Z"
+
+    SecretFile:
+      type: object
+      description: |
+        Metadata for a file attached to a secret.
+        Use the `url` field to download the file contents — it points to
+        `GET /secrets/{secretId}/files/{fileId}`.
+      required: [id, secret_id, original_name, content_type, size_bytes, position, created_at, url]
+      properties:
+        id:
+          type: string
+          format: uuid
+        secret_id:
+          type: string
+          format: uuid
+        original_name:
+          type: string
+        content_type:
+          type: string
+        size_bytes:
+          type: integer
+          format: int64
+        position:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+        url:
+          type: string
+          format: uri
+          description: "SDK download URL for this file"
+
+    Secret:
+      type: object
+      description: |
+        A secret with all its decrypted fields and file metadata.
+        Secrets are always scoped to the org that owns the API key.
+      required: [id, title, description, tags, org_id, created_by, created_at, updated_at, fields, files]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        tags:
+          type: array
+          items: { type: string }
+        org_id:
+          type: string
+          format: uuid
+        created_by:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        fields:
+          type: array
+          items: { $ref: '#/components/schemas/SecretField' }
+        files:
+          type: array
+          items: { $ref: '#/components/schemas/SecretFile' }
+
+    SecretSummary:
+      type: object
+      description: Lightweight secret listing — no fields or files.
+      required: [id, title, description, tags, org_id, created_by, created_at, updated_at]
+      properties:
+        id:          { type: string, format: uuid }
+        title:       { type: string }
+        description: { type: string }
+        tags:        { type: array, items: { type: string } }
+        org_id:      { type: string, format: uuid }
+        created_by:  { type: string, format: uuid }
+        created_at:  { type: string, format: date-time }
+        updated_at:  { type: string, format: date-time }
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource not found or does not belong to this org
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+security:
+  - apiKeyAuth: []
+
+paths:
+
+  /secrets:
+    get:
+      operationId: listSecrets
+      tags: [secrets]
+      summary: List org secrets
+      description: |
+        Returns all secrets belonging to the org associated with the API key.
+        Fields and files are **not** included in the list — fetch them via
+        `GET /secrets/{id}` or the individual field/file endpoints.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/SecretSummary' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+
+  /secrets/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Secret ID
+        schema: { type: string, format: uuid }
+    get:
+      operationId: getSecret
+      tags: [secrets]
+      summary: Get secret with all decrypted fields and file metadata
+      description: |
+        Returns the full secret object including:
+        - All fields with their **decrypted** values
+        - All file metadata with SDK download URLs
+
+        The secret must belong to the org that owns the API key.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Secret' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "404": { $ref: '#/components/responses/NotFound' }
+
+  /secrets/{id}/fields/{fid}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Secret ID
+        schema: { type: string, format: uuid }
+      - name: fid
+        in: path
+        required: true
+        description: Field ID
+        schema: { type: string, format: uuid }
+    get:
+      operationId: getField
+      tags: [secrets]
+      summary: Get a single decrypted field by ID
+      description: |
+        Returns one field with its decrypted value.
+        Useful when you only need a specific credential without fetching the
+        entire secret (e.g. injecting a password into a CI environment).
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SecretField' }
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "404": { $ref: '#/components/responses/NotFound' }
+
+  /secrets/{id}/files/{fid}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Secret ID
+        schema: { type: string, format: uuid }
+      - name: fid
+        in: path
+        required: true
+        description: File ID
+        schema: { type: string, format: uuid }
+    get:
+      operationId: getFile
+      tags: [secrets]
+      summary: Download a file by ID
+      description: |
+        Streams the raw file bytes. Use the `Content-Disposition` header
+        to determine the suggested filename. The `Content-Type` header
+        reflects the original file's MIME type.
+      responses:
+        "200":
+          description: File bytes
+          headers:
+            Content-Disposition:
+              schema: { type: string }
+              example: 'attachment; filename="cert.pem"'
+            Content-Type:
+              schema: { type: string }
+              example: "application/x-pem-file"
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "401": { $ref: '#/components/responses/Unauthorized' }
+        "404": { $ref: '#/components/responses/NotFound' }
