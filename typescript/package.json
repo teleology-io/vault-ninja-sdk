@@ -1,6 +1,6 @@
 {
   "name": "@teleology/vn",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Vault Ninja SDK — read org secrets programmatically",
   "main": "dist/main.js",
   "types": "dist/main.d.ts",

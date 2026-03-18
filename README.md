@@ -30,7 +30,7 @@ Override it by setting the `VAULT_API_URL` environment variable or passing it di
 
 **Install:**
 ```bash
-pip install "https://github.com/teleology-io/vault-ninja-sdk/releases/download/v1.0.0/vault_ninja-1.0.0.tar.gz"
+pip install "https://github.com/teleology-io/vault-ninja-sdk/releases/download/v1.0.2/vault_ninja-1.0.2.tar.gz"
 ```
 
 **Usage:**
@@ -58,7 +58,7 @@ print(field.value)
 
 **Install:**
 ```bash
-npm install "https://github.com/teleology-io/vault-ninja-sdk/releases/download/v1.0.0/teleology-vn-1.0.0.tgz"
+npm install "https://github.com/teleology-io/vault-ninja-sdk/releases/download/v1.0.2/teleology-vn-1.0.2.tgz"
 ```
 
 **Usage:**
@@ -81,7 +81,7 @@ console.log(field.value);
 
 **Install:**
 ```bash
-go get github.com/teleology-io/vault-ninja-sdk/go@v1.0.0
+go get github.com/teleology-io/vault-ninja-sdk/go@v1.0.2
 ```
 
 **Usage:**
