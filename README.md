@@ -30,7 +30,7 @@ Override it by setting the `VAULT_API_URL` environment variable or passing it di
 
 **Install:**
 ```bash
-pip install "https://github.com/teleology-io/vault-ninja-sdk/releases/download/v1.0.0/vault_ninja-1.0.0.tar.gz"
+pip install "https://github.com/teleology-io/vault-ninja-sdk/releases/latest/download/teleology-vn-python.tgz"
 ```
 
 **Usage:**
@@ -58,7 +58,7 @@ print(field.value)
 
 **Install:**
 ```bash
-npm install "https://github.com/teleology-io/vault-ninja-sdk/releases/download/v1.0.0/teleology-vn-1.0.0.tgz"
+npm install "https://github.com/teleology-io/vault-ninja-sdk/releases/latest/download/teleology-vn-node.tgz"
 ```
 
 **Usage:**
@@ -81,7 +81,7 @@ console.log(field.value);
 
 **Install:**
 ```bash
-go get github.com/teleology-io/vault-ninja-sdk/go@v1.0.0
+go get github.com/teleology-io/vault-ninja-sdk/go@latest
 ```
 
 **Usage:**
@@ -90,11 +90,19 @@ import "github.com/teleology-io/vault-ninja-sdk/go/vaultninja"
 
 client := vaultninja.New("vn_org_...")
 
+// Returns []Secret — fields and files are included
 secrets, err := client.ListSecrets(ctx)
-secret,  err := client.GetSecret(ctx, "<secret-id>")
-field,   err := client.GetField(ctx, "<secret-id>", "<field-id>")
 
-fmt.Println(field.Value)
+secret, err := client.GetSecret(ctx, "<secret-id>")
+for _, f := range secret.GetFields() {
+    fmt.Println(f.GetLabel(), "=", f.GetValue())
+}
+
+field, err := client.GetField(ctx, "<secret-id>", "<field-id>")
+fmt.Println(field.GetValue())
+
+// Returns *os.File
+file, err := client.GetFile(ctx, "<secret-id>", "<file-id>")
 ```
 
 ---
@@ -137,7 +145,7 @@ vn_get_file "$VN_API_KEY" "<secret-id>" "<file-id>" > cert.pem
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/secrets` | List all org secrets (no fields/files) |
+| `GET` | `/secrets` | List all org secrets (includes fields and files) |
 | `GET` | `/secrets/{id}` | Get secret with decrypted fields + file metadata |
 | `GET` | `/secrets/{id}/fields/{fid}` | Get a single decrypted field |
 | `GET` | `/secrets/{id}/files/{fid}` | Download a file |
