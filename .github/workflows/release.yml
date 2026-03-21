@@ -57,10 +57,6 @@ jobs:
           # Go UserAgent
           sed -i "s|OpenAPI-Generator/[^/]*/go|OpenAPI-Generator/$VERSION/go|g" go/configuration.go
 
-          # README install URLs
-          sed -i "s|/releases/download/v[^/]*/vault_ninja-[^\"]*|/releases/download/v$VERSION/vault_ninja-$VERSION.tar.gz|g" README.md
-          sed -i "s|/releases/download/v[^/]*/teleology-vn-[^\"]*|/releases/download/v$VERSION/teleology-vn-$VERSION.tgz|g" README.md
-          sed -i "s|vault-ninja-sdk/go@v[^ ]*|vault-ninja-sdk/go@v$VERSION|g" README.md
 
       - name: Build Python sdist
         run: |
@@ -68,6 +64,7 @@ jobs:
           rm -f setup.py setup.cfg
           pip install build
           python -m build --sdist
+          mv dist/*.tar.gz dist/teleology-vn-python.tgz
 
       - name: Build TypeScript package
         run: |
@@ -75,12 +72,13 @@ jobs:
           npm install
           npm run build
           npm pack
+          mv teleology-vn-*.tgz teleology-vn-node.tgz
 
       - name: Commit version bumps
         run: |
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
-          git add python/pyproject.toml typescript/package.json go/configuration.go README.md
+          git add python/pyproject.toml typescript/package.json go/configuration.go
           git commit -m "chore: release v${{ inputs.version }}"
           git push
 
@@ -96,5 +94,5 @@ jobs:
           tag_name: v${{ inputs.version }}
           name: v${{ inputs.version }}
           files: |
-            python/dist/*.tar.gz
-            typescript/teleology-vn-*.tgz
+            python/dist/teleology-vn-python.tgz
+            typescript/teleology-vn-node.tgz
