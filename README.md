@@ -20,7 +20,7 @@ Create keys in your org settings → **API Keys**.
 
 ## Base URL
 
-The default base URL is `https://vaultninja.org/api/sdk/v1`.
+The default base URL is `https://api.vaultninja.org/api/sdk/v1`.
 
 Override it by setting the `VAULT_API_URL` environment variable or passing it directly to the client constructor.
 

@@ -7,7 +7,7 @@
 import { Configuration, SecretsApi } from './index';
 import type { Secret, SecretField, SecretSummary } from './index';
 
-const DEFAULT_BASE_URL = 'https://vaultninja.org/api/sdk/v1';
+const DEFAULT_BASE_URL = 'https://api.vaultninja.org/api/sdk/v1';
 
 export class VaultNinjaClient {
   private api: SecretsApi;
