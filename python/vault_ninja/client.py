@@ -3,12 +3,13 @@ Vault Ninja SDK client wrapper.
 Adds VAULT_API_URL env var support and a clean constructor on top of the generated API classes.
 """
 import os
+from typing import Optional
 
 from vault_ninja.api.secrets_api import SecretsApi
 from vault_ninja.api_client import ApiClient
 from vault_ninja.configuration import Configuration
 
-_DEFAULT_BASE_URL = "https://vaultninja.org/api/sdk/v1"
+_DEFAULT_BASE_URL = "https://api.vaultninja.org/api/sdk/v1"
 
 
 class VaultNinjaClient:
@@ -30,14 +31,14 @@ class VaultNinjaClient:
         secrets = client.secrets.list_secrets()
     """
 
-    def __init__(self, api_key: str, base_url: str | None = None) -> None:
+    def __init__(self, api_key: str, base_url: Optional[str] = None) -> None:
         resolved = base_url or os.environ.get("VAULT_API_URL") or _DEFAULT_BASE_URL
         config = Configuration(host=resolved, access_token=api_key)
         self._api_client = ApiClient(configuration=config)
         self.secrets = SecretsApi(self._api_client)
 
     def close(self) -> None:
-        self._api_client.close()
+        pass  # ApiClient has no close(); cleanup is handled internally
 
     def __enter__(self) -> "VaultNinjaClient":
         return self

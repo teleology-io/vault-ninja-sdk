@@ -8,10 +8,10 @@
 #   field=$(vn_get_field "$VN_API_KEY" "$SECRET_ID" "$FIELD_ID" | jq -r '.value')
 #
 # Environment:
-#   VAULT_API_URL  Override the API base URL (default: https://vaultninja.org/api/sdk/v1)
+#   VAULT_API_URL  Override the API base URL (default: https://api.vaultninja.org/api/sdk/v1)
 #   VN_API_KEY     Conventionally used to hold your API key
 
-VAULT_API_URL="${VAULT_API_URL:-https://vaultninja.org/api/sdk/v1}"
+VAULT_API_URL="${VAULT_API_URL:-https://api.vaultninja.org/api/sdk/v1}"
 
 # List all secrets in the org (no fields or files).
 # Usage: vn_list_secrets <api_key>
