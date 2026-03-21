@@ -97,6 +97,10 @@ func NewConfiguration() *Configuration {
 				Description: "Local dev",
 			},
 			{
+				URL: "https://beta.api.vaultninja.org/api/sdk/v1",
+				Description: "Beta",
+			},
+			{
 				URL: "https://api.vaultninja.org/api/sdk/v1",
 				Description: "Production",
 			},

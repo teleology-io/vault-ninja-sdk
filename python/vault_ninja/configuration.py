@@ -528,6 +528,10 @@ class Configuration:
                 'description': "Local dev",
             },
             {
+                'url': "https://beta.api.vaultninja.org/api/sdk/v1",
+                'description': "Beta",
+            },
+            {
                 'url': "https://api.vaultninja.org/api/sdk/v1",
                 'description': "Production",
             }

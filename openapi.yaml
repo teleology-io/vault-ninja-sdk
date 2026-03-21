@@ -23,6 +23,8 @@ info:
 servers:
   - url: http://localhost:8080/api/sdk/v1
     description: Local dev
+  - url: https://beta.api.vaultninja.org/api/sdk/v1
+    description: Beta
   - url: https://api.vaultninja.org/api/sdk/v1
     description: Production
 
