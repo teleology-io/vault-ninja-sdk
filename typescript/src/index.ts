@@ -1,5 +1,102 @@
-/* tslint:disable */
-/* eslint-disable */
-export * from './runtime';
-export * from './apis/index';
-export * from './models/index';
+/**
+ * Vault Ninja SDK — slim read-only client for org secrets.
+ * No runtime dependencies. Uses native fetch.
+ *
+ * Usage:
+ *   import { vn } from '@teleology/vn';
+ *   const client = new vn('vn_org_...');
+ *   const secrets = await client.list_secrets();
+ *   const secret  = await client.get_secret('<id>');
+ *   const field   = await client.get_field('<id>', '<fid>');
+ *   const file    = await client.get_file('<id>', '<fid>');
+ *
+ * Env vars:
+ *   VN_API_KEY — API key (used when api_key is omitted)
+ *   VN_API_URL — override base URL
+ */
+
+const DEFAULT_URL = 'https://api.vaultninja.org/api/sdk/v1';
+
+export type FieldType = 'PASSWORD' | 'CARD' | 'TOTP' | 'URL' | 'NOTE' | 'TEXT';
+
+export interface SecretField {
+  id: string;
+  secret_id: string;
+  position: number;
+  field_type: FieldType;
+  label: string;
+  value: string;
+  created_at: string;
+}
+
+export interface SecretFile {
+  id: string;
+  secret_id: string;
+  original_name: string;
+  content_type: string;
+  size_bytes: number;
+  position: number;
+  created_at: string;
+  url: string;
+}
+
+export interface Secret {
+  id: string;
+  title: string;
+  description: string;
+  tags: string[];
+  org_id: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  fields: SecretField[];
+  files: SecretFile[];
+}
+
+export class VaultNinjaError extends Error {
+  constructor(public readonly status: number, message: string) {
+    super(`Vault Ninja API error ${status}: ${message}`);
+    this.name = 'VaultNinjaError';
+  }
+}
+
+const env = (key: string): string | undefined =>
+  typeof process !== 'undefined' ? process.env[key] : undefined;
+
+export class vn {
+  private readonly baseUrl: string;
+  private readonly apiKey: string;
+
+  constructor(api_key?: string, base_url?: string) {
+    this.apiKey = api_key ?? env('VN_API_KEY') ?? '';
+    this.baseUrl = (base_url ?? env('VN_API_URL') ?? DEFAULT_URL).replace(/\/$/, '');
+    if (!this.apiKey) throw new Error('api_key is required (or set VN_API_KEY)');
+  }
+
+  private async _get(path: string): Promise<Response> {
+    const res = await fetch(this.baseUrl + path, {
+      headers: { Authorization: `Bearer ${this.apiKey}` },
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ error: res.statusText })) as { error?: string };
+      throw new VaultNinjaError(res.status, body.error ?? res.statusText);
+    }
+    return res;
+  }
+
+  async list_secrets(): Promise<Secret[]> {
+    return (await this._get('/secrets')).json() as Promise<Secret[]>;
+  }
+
+  async get_secret(id: string): Promise<Secret> {
+    return (await this._get(`/secrets/${id}`)).json() as Promise<Secret>;
+  }
+
+  async get_field(id: string, fid: string): Promise<SecretField> {
+    return (await this._get(`/secrets/${id}/fields/${fid}`)).json() as Promise<SecretField>;
+  }
+
+  async get_file(id: string, fid: string): Promise<ArrayBuffer> {
+    return (await this._get(`/secrets/${id}/files/${fid}`)).arrayBuffer();
+  }
+}

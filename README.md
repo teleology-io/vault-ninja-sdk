@@ -2,8 +2,6 @@
 
 Read-only programmatic access to your [Vault Ninja](https://vaultninja.org) organization secrets. Use this SDK in CI/CD pipelines, deployment scripts, and automation tools to pull credentials at runtime — no hardcoding required.
 
-**OpenAPI spec:** [`openapi.yaml`](./openapi.yaml)
-
 ---
 
 ## Authentication
@@ -18,11 +16,12 @@ Create keys in your org settings → **API Keys**.
 
 ---
 
-## Base URL
+## Environment Variables
 
-The default base URL is `https://api.vaultninja.org/api/sdk/v1`.
-
-Override it by setting the `VAULT_API_URL` environment variable or passing it directly to the client constructor.
+| Variable | Description |
+|---|---|
+| `VN_API_KEY` | Your org API key |
+| `VN_API_URL` | Override the base URL (default: `https://api.vaultninja.org/api/sdk/v1`) |
 
 ---
 
@@ -35,26 +34,27 @@ pip install "https://github.com/teleology-io/vault-ninja-sdk/releases/latest/dow
 
 **Usage:**
 ```python
-from vault_ninja.client import VaultNinjaClient
+from vaultninja import vn
 
-client = VaultNinjaClient(api_key="vn_org_...")
+client = vn(api_key="vn_org_...")
 
-# List all secrets
-secrets = client.secrets.list_secrets()
+secrets = client.list_secrets()
 
-# Get a specific secret with decrypted fields
-secret = client.secrets.get_secret(id="<secret-id>")
+secret = client.get_secret(id="<secret-id>")
 for field in secret.fields:
     print(field.label, "=", field.value)
 
-# Inject a single credential
-field = client.secrets.get_field(id="<secret-id>", fid="<field-id>")
+field = client.get_field(id="<secret-id>", fid="<field-id>")
 print(field.value)
+
+data = client.get_file(id="<secret-id>", fid="<file-id>")
 ```
+
+Zero dependencies — stdlib only.
 
 ---
 
-## TypeScript / Node.js
+## TypeScript
 
 **Install:**
 ```bash
@@ -63,17 +63,19 @@ npm install "https://github.com/teleology-io/vault-ninja-sdk/releases/latest/dow
 
 **Usage:**
 ```typescript
-import { VaultNinjaClient } from '@teleology/vn';
+import { vn } from '@teleology/vn';
 
-const client = new VaultNinjaClient('vn_org_...');
+const client = new vn('vn_org_...');
 
-const secrets = await client.listSecrets();
-const secret  = await client.getSecret('<secret-id>');
-const field   = await client.getField('<secret-id>', '<field-id>');
-const file    = await client.getFile('<secret-id>', '<file-id>');
+const secrets = await client.list_secrets();
+const secret  = await client.get_secret('<secret-id>');
+const field   = await client.get_field('<secret-id>', '<field-id>');
+const file    = await client.get_file('<secret-id>', '<file-id>');
 
 console.log(field.value);
 ```
+
+No runtime dependencies — native `fetch`, full TypeScript types.
 
 ---
 
@@ -90,20 +92,20 @@ import "github.com/teleology-io/vault-ninja-sdk/go/vaultninja"
 
 client := vaultninja.New("vn_org_...")
 
-// Returns []Secret — fields and files are included
 secrets, err := client.ListSecrets(ctx)
 
 secret, err := client.GetSecret(ctx, "<secret-id>")
-for _, f := range secret.GetFields() {
-    fmt.Println(f.GetLabel(), "=", f.GetValue())
+for _, f := range secret.Fields {
+    fmt.Println(f.Label, "=", f.Value)
 }
 
 field, err := client.GetField(ctx, "<secret-id>", "<field-id>")
-fmt.Println(field.GetValue())
+fmt.Println(field.Value)
 
-// Returns *os.File
-file, err := client.GetFile(ctx, "<secret-id>", "<file-id>")
+data, err := client.GetFile(ctx, "<secret-id>", "<file-id>")
 ```
+
+Zero dependencies — stdlib only.
 
 ---
 
@@ -112,27 +114,27 @@ file, err := client.GetFile(ctx, "<secret-id>", "<file-id>")
 **Source inline (zero install):**
 ```bash
 source <(curl -fsSL https://raw.githubusercontent.com/teleology-io/vault-ninja-sdk/master/bash/vault-ninja.sh)
+export VN_API_KEY="vn_org_..."
 
 # List secrets
-vn_list_secrets "$VN_API_KEY"
+vn list
 
 # Get a specific secret
-vn_get_secret "$VN_API_KEY" "<secret-id>"
+vn secret "<secret-id>"
 
 # Inject a field value (requires jq)
-PASSWORD=$(vn_get_field "$VN_API_KEY" "<secret-id>" "<field-id>" | jq -r '.value')
+PASSWORD=$(vn field "<secret-id>" "<field-id>" | jq -r '.value')
 
 # Download a file
-vn_get_file "$VN_API_KEY" "<secret-id>" "<file-id>" > cert.pem
+vn file "<secret-id>" "<file-id>" > cert.pem
 ```
-
 
 **GitHub Actions example:**
 ```yaml
 - name: Fetch credentials from Vault Ninja
   run: |
     source <(curl -fsSL https://raw.githubusercontent.com/teleology-io/vault-ninja-sdk/master/bash/vault-ninja.sh)
-    DB_PASS=$(vn_get_field "$VN_API_KEY" "$SECRET_ID" "$FIELD_ID" | jq -r '.value')
+    DB_PASS=$(vn field "$SECRET_ID" "$FIELD_ID" | jq -r '.value')
     echo "::add-mask::$DB_PASS"
     echo "DB_PASSWORD=$DB_PASS" >> "$GITHUB_ENV"
   env:
@@ -145,12 +147,10 @@ vn_get_file "$VN_API_KEY" "<secret-id>" "<file-id>" > cert.pem
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/secrets` | List all org secrets (includes fields and files) |
+| `GET` | `/secrets` | List all org secrets |
 | `GET` | `/secrets/{id}` | Get secret with decrypted fields + file metadata |
 | `GET` | `/secrets/{id}/fields/{fid}` | Get a single decrypted field |
 | `GET` | `/secrets/{id}/files/{fid}` | Download a file |
-
-Full schema: see [`openapi.yaml`](./openapi.yaml)
 
 ---
 

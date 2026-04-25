@@ -1,50 +1,57 @@
 #!/usr/bin/env bash
 # Vault Ninja SDK — Bash
-# source this file, then call vn_* functions with your API key.
+# source this file, then call: vn <subcommand> [args]
 #
 # Usage:
 #   source vault-ninja.sh
-#   secrets=$(vn_list_secrets "$VN_API_KEY")
-#   field=$(vn_get_field "$VN_API_KEY" "$SECRET_ID" "$FIELD_ID" | jq -r '.value')
+#   export VN_API_KEY="vn_org_..."
+#   vn list
+#   vn secret <secret_id>
+#   vn field  <secret_id> <field_id>
+#   vn file   <secret_id> <file_id>
 #
 # Environment:
-#   VAULT_API_URL  Override the API base URL (default: https://api.vaultninja.org/api/sdk/v1)
-#   VN_API_KEY     Conventionally used to hold your API key
+#   VN_API_KEY  API key
+#   VN_API_URL  Override base URL (default: https://api.vaultninja.org/api/sdk/v1)
 
-VAULT_API_URL="${VAULT_API_URL:-https://api.vaultninja.org/api/sdk/v1}"
+VN_API_URL="${VN_API_URL:-https://api.vaultninja.org/api/sdk/v1}"
 
-# List all secrets in the org (no fields or files).
-# Usage: vn_list_secrets <api_key>
-vn_list_secrets() {
-  local key="$1"
-  curl -fsSL \
-    -H "Authorization: Bearer ${key}" \
-    "${VAULT_API_URL}/secrets"
-}
+vn() {
+  local key="${VN_API_KEY}"
+  if [[ -z "$key" ]]; then
+    echo "vn: VN_API_KEY is not set" >&2
+    return 1
+  fi
 
-# Get a single secret with all decrypted fields and file metadata.
-# Usage: vn_get_secret <api_key> <secret_id>
-vn_get_secret() {
-  local key="$1" id="$2"
-  curl -fsSL \
-    -H "Authorization: Bearer ${key}" \
-    "${VAULT_API_URL}/secrets/${id}"
-}
-
-# Get a single decrypted field value.
-# Usage: vn_get_field <api_key> <secret_id> <field_id>
-vn_get_field() {
-  local key="$1" id="$2" fid="$3"
-  curl -fsSL \
-    -H "Authorization: Bearer ${key}" \
-    "${VAULT_API_URL}/secrets/${id}/fields/${fid}"
-}
-
-# Download a file's raw bytes.
-# Usage: vn_get_file <api_key> <secret_id> <file_id>
-vn_get_file() {
-  local key="$1" id="$2" fid="$3"
-  curl -fsSL \
-    -H "Authorization: Bearer ${key}" \
-    "${VAULT_API_URL}/secrets/${id}/files/${fid}"
+  local cmd="$1"; shift
+  case "$cmd" in
+    list)
+      curl -fsSL \
+        -H "Authorization: Bearer ${key}" \
+        "${VN_API_URL}/secrets"
+      ;;
+    secret)
+      local id="$1"
+      curl -fsSL \
+        -H "Authorization: Bearer ${key}" \
+        "${VN_API_URL}/secrets/${id}"
+      ;;
+    field)
+      local id="$1" fid="$2"
+      curl -fsSL \
+        -H "Authorization: Bearer ${key}" \
+        "${VN_API_URL}/secrets/${id}/fields/${fid}"
+      ;;
+    file)
+      local id="$1" fid="$2"
+      curl -fsSL \
+        -H "Authorization: Bearer ${key}" \
+        "${VN_API_URL}/secrets/${id}/files/${fid}"
+      ;;
+    *)
+      echo "vn: unknown command '${cmd}'" >&2
+      echo "Usage: vn list | secret <id> | field <id> <fid> | file <id> <fid>" >&2
+      return 1
+      ;;
+  esac
 }

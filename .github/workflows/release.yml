@@ -6,24 +6,12 @@ on:
       version:
         description: 'Release version (e.g. 1.2.0)'
         required: true
-      spec_url:
-        description: 'OpenAPI spec URL'
-        required: false
-        default: 'https://beta.api.vaultninja.org/api/sdk/openapi.yaml'
 
 permissions:
   contents: write
 
 jobs:
-  generate:
-    uses: ./.github/workflows/generate-sdks.yml
-    with:
-      spec_url: ${{ inputs.spec_url }}
-    permissions:
-      contents: write
-
   release:
-    needs: generate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -54,14 +42,9 @@ jobs:
             fs.writeFileSync('typescript/package.json', JSON.stringify(pkg, null, 2) + '\n');
           "
 
-          # Go UserAgent
-          sed -i "s|OpenAPI-Generator/[^/]*/go|OpenAPI-Generator/$VERSION/go|g" go/configuration.go
-
-
       - name: Build Python sdist
         run: |
           cd python
-          rm -f setup.py setup.cfg
           pip install build
           python -m build --sdist
           mv dist/*.tar.gz dist/teleology-vn-python.tgz
@@ -78,7 +61,7 @@ jobs:
         run: |
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
-          git add python/pyproject.toml typescript/package.json go/configuration.go
+          git add python/pyproject.toml typescript/package.json
           git commit -m "chore: release v${{ inputs.version }}"
           git push
 

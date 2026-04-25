@@ -1,6 +1,0 @@
-pyproject.toml
-README.md
-vault_ninja/client.py
-vault_ninja/__init__.py
-setup.py
-setup.cfg

@@ -3,7 +3,7 @@
 // Usage (from the go/ directory):
 //
 //	go run ./cmd/harness -api-key=vn_org_... -endpoint=http://...
-//	VN_API_KEY=vn_org_... VAULT_API_URL=http://... go run ./cmd/harness
+//	VN_API_KEY=vn_org_... VN_API_URL=http://... go run ./cmd/harness
 package main
 
 import (
@@ -29,7 +29,7 @@ func bad(label string) {
 
 func main() {
 	apiKey := flag.String("api-key", "", "API key (or set VN_API_KEY)")
-	endpoint := flag.String("endpoint", "", "API base URL (or set VAULT_API_URL)")
+	endpoint := flag.String("endpoint", "", "API base URL (or set VN_API_URL)")
 	flag.Parse()
 
 	if *apiKey == "" {
@@ -42,66 +42,58 @@ func main() {
 
 	fmt.Println("[go SDK]")
 
-	var opts []vaultninja.Option
-	if *endpoint != "" {
-		opts = append(opts, vaultninja.WithBaseURL(*endpoint))
-	}
-	// VAULT_API_URL is picked up automatically by the client when endpoint flag is empty.
-
-	client := vaultninja.New(*apiKey, opts...)
+	client := vaultninja.New(*apiKey, *endpoint)
 	ctx := context.Background()
 
-	// 1. listSecrets
+	// 1. ListSecrets
 	secrets, err := client.ListSecrets(ctx)
 	if err != nil {
-		bad(fmt.Sprintf("listSecrets — %v", err))
+		bad(fmt.Sprintf("ListSecrets — %v", err))
 		printResults()
 		os.Exit(1)
 	}
 	if len(secrets) == 0 {
-		bad("listSecrets — returned 0 secrets (need at least 1 to continue)")
+		bad("ListSecrets — returned 0 secrets (need at least 1 to continue)")
 		printResults()
 		os.Exit(1)
 	}
-	ok(fmt.Sprintf("listSecrets — found %d secret(s)", len(secrets)))
+	ok(fmt.Sprintf("ListSecrets — found %d secret(s)", len(secrets)))
 
-	secretID := secrets[0].GetId()
+	secretID := secrets[0].ID
 
-	// 2. getSecret
+	// 2. GetSecret
 	secret, err := client.GetSecret(ctx, secretID)
 	if err != nil {
-		bad(fmt.Sprintf("getSecret(%s) — %v", secretID, err))
+		bad(fmt.Sprintf("GetSecret(%s) — %v", secretID, err))
 		printResults()
 		os.Exit(1)
 	}
-	ok(fmt.Sprintf("getSecret(%s) — %q", secretID, secret.GetTitle()))
+	ok(fmt.Sprintf("GetSecret(%s) — %q", secretID, secret.Title))
 
-	// 3. getField
-	fields := secret.GetFields()
-	if len(fields) == 0 {
-		fmt.Println("  - getField — skipped (no fields on secret)")
+	// 3. GetField
+	if len(secret.Fields) == 0 {
+		fmt.Println("  - GetField — skipped (no fields on secret)")
 	} else {
-		fieldID := fields[0].GetId()
+		fieldID := secret.Fields[0].ID
 		field, err := client.GetField(ctx, secretID, fieldID)
 		if err != nil {
-			bad(fmt.Sprintf("getField(%s, %s) — %v", secretID, fieldID, err))
+			bad(fmt.Sprintf("GetField(%s, %s) — %v", secretID, fieldID, err))
 		} else {
-			ok(fmt.Sprintf("getField(%s, %s) — label: %q", secretID, fieldID, field.GetLabel()))
+			ok(fmt.Sprintf("GetField(%s, %s) — label: %q", secretID, fieldID, field.Label))
 		}
 	}
 
-	// 4. getFile
-	files := secret.GetFiles()
-	if len(files) == 0 {
-		fmt.Println("  - getFile — skipped (no files on secret)")
+	// 4. GetFile
+	if len(secret.Files) == 0 {
+		fmt.Println("  - GetFile — skipped (no files on secret)")
 	} else {
-		fileID := files[0].GetId()
-		sizeBytes := files[0].GetSizeBytes()
+		fileID := secret.Files[0].ID
+		sizeBytes := secret.Files[0].SizeBytes
 		_, err := client.GetFile(ctx, secretID, fileID)
 		if err != nil {
-			bad(fmt.Sprintf("getFile(%s, %s) — %v", secretID, fileID, err))
+			bad(fmt.Sprintf("GetFile(%s, %s) — %v", secretID, fileID, err))
 		} else {
-			ok(fmt.Sprintf("getFile(%s, %s) — %d bytes", secretID, fileID, sizeBytes))
+			ok(fmt.Sprintf("GetFile(%s, %s) — %d bytes", secretID, fileID, sizeBytes))
 		}
 	}
 

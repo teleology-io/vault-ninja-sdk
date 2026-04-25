@@ -2,11 +2,10 @@
   "name": "@teleology/vn",
   "version": "1.0.0",
   "description": "Vault Ninja SDK — read org secrets programmatically",
-  "main": "dist/main.js",
-  "types": "dist/main.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "harness": "tsc && node dist/harness.js"
+    "build": "tsc"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
