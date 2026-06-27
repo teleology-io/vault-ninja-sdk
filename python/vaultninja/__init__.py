@@ -25,7 +25,13 @@ import os
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Literal
+
+FieldType = Literal[
+    "password", "card", "totp", "url", "note", "text",
+    "phone", "date", "datetime", "passkey",
+    "username_password", "email_password",
+]
 
 _DEFAULT_URL = "https://api.vaultninja.org/api/sdk/v1"
 
@@ -40,14 +46,37 @@ class VaultNinjaError(Exception):
 
 
 @dataclass
+class LoginValue:
+    """Parsed value for username_password and email_password fields."""
+    login: str
+    password: str
+
+@dataclass
+class CardValue:
+    """Parsed value for card fields."""
+    number: str
+    expiry: str
+    pin: str
+
+@dataclass
 class SecretField:
     id: str
     secret_id: str
     position: int
-    field_type: str
+    field_type: FieldType
     label: str
     value: str
     created_at: str
+
+    def parse_login(self) -> LoginValue:
+        """Parse value for username_password / email_password fields."""
+        d = json.loads(self.value)
+        return LoginValue(login=d["login"], password=d["password"])
+
+    def parse_card(self) -> CardValue:
+        """Parse value for card fields."""
+        d = json.loads(self.value)
+        return CardValue(number=d["number"], expiry=d["expiry"], pin=d["pin"])
 
 
 @dataclass

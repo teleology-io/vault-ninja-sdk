@@ -28,13 +28,32 @@ const defaultBaseURL = "https://api.vaultninja.org/api/sdk/v1"
 type FieldType string
 
 const (
-	FieldTypePassword FieldType = "PASSWORD"
-	FieldTypeCard     FieldType = "CARD"
-	FieldTypeTOTP     FieldType = "TOTP"
-	FieldTypeURL      FieldType = "URL"
-	FieldTypeNote     FieldType = "NOTE"
-	FieldTypeText     FieldType = "TEXT"
+	FieldTypePassword         FieldType = "password"
+	FieldTypeCard             FieldType = "card"
+	FieldTypeTOTP             FieldType = "totp"
+	FieldTypeURL              FieldType = "url"
+	FieldTypeNote             FieldType = "note"
+	FieldTypeText             FieldType = "text"
+	FieldTypePhone            FieldType = "phone"
+	FieldTypeDate             FieldType = "date"
+	FieldTypeDatetime         FieldType = "datetime"
+	FieldTypePasskey          FieldType = "passkey"
+	FieldTypeUsernamePassword FieldType = "username_password"
+	FieldTypeEmailPassword    FieldType = "email_password"
 )
+
+// LoginValue is the parsed value for username_password and email_password fields.
+type LoginValue struct {
+	Login    string `json:"login"`
+	Password string `json:"password"`
+}
+
+// CardValue is the parsed value for card fields.
+type CardValue struct {
+	Number string `json:"number"`
+	Expiry string `json:"expiry"`
+	Pin    string `json:"pin"`
+}
 
 // SecretField is a single decrypted field belonging to a secret.
 type SecretField struct {

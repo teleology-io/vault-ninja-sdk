@@ -17,7 +17,15 @@
 
 const DEFAULT_URL = 'https://api.vaultninja.org/api/sdk/v1';
 
-export type FieldType = 'PASSWORD' | 'CARD' | 'TOTP' | 'URL' | 'NOTE' | 'TEXT';
+export type FieldType =
+  | 'password' | 'card' | 'totp' | 'url' | 'note' | 'text'
+  | 'phone' | 'date' | 'datetime' | 'passkey'
+  | 'username_password' | 'email_password';
+
+/** Value shape for username_password and email_password fields. */
+export interface LoginValue { login: string; password: string }
+/** Value shape for card fields. */
+export interface CardValue  { number: string; expiry: string; pin: string }
 
 export interface SecretField {
   id: string;
@@ -25,6 +33,7 @@ export interface SecretField {
   position: number;
   field_type: FieldType;
   label: string;
+  /** Decrypted plaintext. For card/username_password/email_password, JSON.parse this into LoginValue or CardValue. */
   value: string;
   created_at: string;
 }
@@ -60,8 +69,8 @@ export class VaultNinjaError extends Error {
   }
 }
 
-const env = (key: string): string | undefined =>
-  typeof process !== 'undefined' ? process.env[key] : undefined;
+const _proc = (globalThis as unknown as { process?: { env: Record<string, string | undefined> } }).process;
+const env = (key: string): string | undefined => _proc?.env[key];
 
 export class vn {
   private readonly baseUrl: string;

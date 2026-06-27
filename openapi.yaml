@@ -48,11 +48,16 @@ components:
 
     FieldType:
       type: string
-      enum: [password, card, totp, url, note, text]
+      enum: [password, card, totp, url, note, text, phone, date, datetime, passkey, username_password, email_password]
 
     SecretField:
       type: object
-      description: A single field belonging to a secret. The `value` is returned decrypted.
+      description: |
+        A single field belonging to a secret. The `value` is returned decrypted.
+
+        For grouped field types the `value` is a JSON-encoded string, not plain text:
+        - `username_password` / `email_password`: `{"login":"...","password":"..."}`
+        - `card`: `{"number":"...","expiry":"MM/YY","pin":"..."}`
       required: [id, secret_id, position, field_type, label, value, created_at]
       properties:
         id:
