@@ -97,4 +97,5 @@ jobs:
           git config user.name "GitHub Actions"
           git add Formula/vn.rb
           git commit -m "vn ${VERSION}"
-          git push
+          # explicit ref: the tap may be empty (no upstream branch yet)
+          git push origin HEAD:master
