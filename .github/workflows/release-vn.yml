@@ -3,8 +3,8 @@ name: Release vn CLI
 # Builds the zero-knowledge vn CLI/MCP binary (go/cmd/vn) for every
 # platform, publishes a GitHub release, tags the Go submodule so
 # `go install github.com/teleology-io/vault-ninja-sdk/go/cmd/vn@latest`
-# works, and (when HOMEBREW_TAP_TOKEN is set) updates the Homebrew formula
-# in teleology-io/homebrew-tap.
+# works, and (when HOMEBREW_TAP_DEPLOY_KEY or HOMEBREW_TAP_TOKEN is set)
+# updates the Homebrew formula in teleology-io/homebrew-tap.
 
 on:
   workflow_dispatch:
@@ -77,11 +77,23 @@ jobs:
 
       - name: Update Homebrew formula
         env:
+          # Either works. Preferred: a write-enabled deploy key on the tap
+          # repo (scoped to that one repo, no org token settings needed).
+          TAP_DEPLOY_KEY: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
           TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
         run: |
           set -euo pipefail
-          if [ -z "${TAP_TOKEN}" ]; then
-            echo "HOMEBREW_TAP_TOKEN not set — skipping Homebrew update"; exit 0
+          if [ -n "${TAP_DEPLOY_KEY}" ]; then
+            mkdir -p ~/.ssh
+            printf '%s\n' "${TAP_DEPLOY_KEY}" > ~/.ssh/tap_key
+            chmod 600 ~/.ssh/tap_key
+            ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+            export GIT_SSH_COMMAND="ssh -i ~/.ssh/tap_key -o IdentitiesOnly=yes"
+            TAP_URL="git@github.com:teleology-io/homebrew-tap.git"
+          elif [ -n "${TAP_TOKEN}" ]; then
+            TAP_URL="https://x-access-token:${TAP_TOKEN}@github.com/teleology-io/homebrew-tap.git"
+          else
+            echo "No HOMEBREW_TAP_DEPLOY_KEY or HOMEBREW_TAP_TOKEN — skipping Homebrew update"; exit 0
           fi
           sum() { grep "vn_${VERSION}_$1.tar.gz" go/cmd/vn/dist/checksums.txt | cut -d' ' -f1; }
           sed -e "s/{{VERSION}}/${VERSION}/g" \
@@ -90,7 +102,7 @@ jobs:
               -e "s/{{SHA_LINUX_ARM64}}/$(sum linux_arm64)/" \
               -e "s/{{SHA_LINUX_AMD64}}/$(sum linux_amd64)/" \
               go/cmd/vn/packaging/vn.rb.tmpl > vn.rb
-          git clone "https://x-access-token:${TAP_TOKEN}@github.com/teleology-io/homebrew-tap.git" tap
+          git clone "${TAP_URL}" tap
           mkdir -p tap/Formula && mv vn.rb tap/Formula/vn.rb
           cd tap
           git config user.email "actions@github.com"
