@@ -4,6 +4,23 @@ Read-only programmatic access to your [Vault Ninja](https://vaultninja.org) orga
 
 ---
 
+## vn — CLI, CI/CD & AI agents (zero-knowledge)
+
+[`vn`](go/cmd/vn/README.md) decrypts secrets on your machine: the server only
+returns ciphertext and never sees your key's private half. It covers
+`vn run -- <cmd>` env injection for CI and local dev, and `vn mcp`, an MCP
+server for AI agents that keeps values out of the model's context. It needs
+a `vn_org_2_…` key.
+
+```bash
+brew install teleology-io/tap/vn
+vn run -- npm test
+```
+
+The language SDKs below use the v1 API, which decrypts on the server.
+
+---
+
 ## Authentication
 
 All requests require an `Authorization` header with a Bearer API key:
